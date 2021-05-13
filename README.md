@@ -1,9 +1,9 @@
-Load Balancing Apache Camel routes with HashiCorp Consul
+Load Balancing Apache Camel routes with Consul
 ==========================================
 
 This example show how to use Camel with HashiCorp Consul.  It follows the ServiceCall Enterprise Integration Pattern (EIP), and makes use of Spring Boot.
 
-This example includes two maven modules:
+This example includes two Maven modules:
 
  - services that exposes a number of services
  - consumer that consumes services
@@ -18,11 +18,30 @@ This example includes two maven modules:
 
 Via the CLI,
 1. Pull Consul's official Docker image: `docker pull consul`
-1. Start the Consul agent as a server: `docker run -d -e CONSUL_BIND_INTERFACE=eth0 consul agent -dev -join=172.17.0.2 -ui -p 8500:8500`
-1. Start the first Consul client: `docker run -d -e CONSUL_BIND_INTERFACE=eth0 consul agent -dev -join=172.17.0.2 -ui`
-1. Start the second Consul client: `docker run -d -e CONSUL_BIND_INTERFACE=eth0 consul agent -dev -join=172.17.0.2 -ui`
+1. Start the Consul agent as a server: 
++
+```
+docker run \
+    -d \
+    -p 8500:8500 \
+    -p 8600:8600/udp \
+    --name=badger \
+    consul agent -server -ui -node=server-1 -bootstrap-expect=1 -client=0.0.0.0
+```
++
+1. Start the first Consul client: `docker run --name=fox -d -e CONSUL_BIND_INTERFACE=eth0 consul agent -node=client-1 -dev -join=172.17.0.2 -ui`
+1. Start the second Consul client: `docker run --name=weasel -d -e CONSUL_BIND_INTERFACE=eth0 consul agent -node=client-2 -dev -join=172.17.0.2 -ui`
+1. Create the service definition file on each Consul client agent:
 
-The consumer is configured in the src/main/resources/application.properties in which we blacklist some services for being discovered and we add some additional services not managed by consul
+```
+cd services/src/main/resources/consul
+docker cp services.json weasel:/consul/config/services.json
+docker exec weasel consul reload
+docker cp services.json fox:/consul/config/services.json
+docker exec fox consul reload
+```
+1. Via the (Consul UI)[http://localhost:8500], verify that each client node has 9 services, each tagged with `Camel`
+1. The consumer is configured in the src/main/resources/application.properties in which we blacklist some services for being discovered and we add some additional services not managed by Consul
 
 ```
     # Configure service filter
