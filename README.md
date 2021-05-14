@@ -19,7 +19,7 @@ This example includes two Maven modules:
 Via the CLI,
 1. Pull Consul's official Docker image: `docker pull consul`
 1. Start the Consul agent as a server: 
-+
+
 ```
 docker run \
     -d \
@@ -28,7 +28,7 @@ docker run \
     --name=badger \
     consul agent -server -ui -node=server-1 -bootstrap-expect=1 -client=0.0.0.0
 ```
-+
+
 1. Start the first Consul client: `docker run --name=fox -d -e CONSUL_BIND_INTERFACE=eth0 consul agent -node=client-1 -dev -join=172.17.0.2 -ui`
 1. Start the second Consul client: `docker run --name=weasel -d -e CONSUL_BIND_INTERFACE=eth0 consul agent -node=client-2 -dev -join=172.17.0.2 -ui`
 1. Create the service definition file on each Consul client agent:
@@ -40,7 +40,7 @@ docker exec weasel consul reload
 docker cp services.json fox:/consul/config/services.json
 docker exec fox consul reload
 ```
-1. Via the (Consul UI)[http://localhost:8500], verify that each client node has 9 services, each tagged with `Camel`
+1. Via the [Consul UI](http://localhost:8500), verify that each client node has 9 services, each tagged with `Camel`.
 1. The consumer is configured in the src/main/resources/application.properties in which we blacklist some services for being discovered and we add some additional services not managed by Consul
 
 ```
@@ -63,29 +63,21 @@ You can build this example using
 
 Using multiple shells:
 
- - start consul:
-
-```
-  $ cd services
-  $ src/main/bash/consul-run-linux.sh      (for linux)
-  $ src/main/bash/consul-run-osx.sh        (for mac osx)
-```
-
- - start the service-1 service group:
+ 1. Start the service-1 service group:
 
 ```
   $ cd services
   $ mvn spring-boot:run -Dspring-boot.run.profiles=service-1
 ```
 
-  - start the service-2 service group:
+1. Start the service-2 service group:
 
 ```
   $ cd services
   $ mvn spring-boot:run -Dspring-boot.run.profiles=service-2
 ```
 
-  - start the consumer
+  1. Start the consumer
 
 ```
   $ cd consumer
